@@ -27,6 +27,7 @@ from .utils import isplural, json_load_object_hook, singular
 class BaseManager(object):
     DECORATED_METHODS = (
         "get",
+        "post",
         "save",
         "filter",
         "all",
@@ -312,7 +313,7 @@ class BaseManager(object):
         uri = "/".join([self.base_url, self.name, id, "OnlineInvoice"])
         return uri, {}, "get", None, None, True
 
-    def save_or_put(self, data, method="post", headers=None, summarize_errors=True):
+    def save_or_put(self, data, method="post", headers=None, summarize_errors=False):
         uri = "/".join([self.base_url, self.name])
         body = self._prepare_data_for_save(data)
         params = self.extra_params.copy()
@@ -320,10 +321,18 @@ class BaseManager(object):
             params["summarizeErrors"] = "false"
         return uri, params, method, body, headers, False
 
-    def _save(self, data):
-        return self.save_or_put(data, method="post")
+    def _post(self, id, data=None, method="post", headers=None, summarize_errors=False):
+        uri = "/".join([self.base_url, self.name, id])
+        body = self._prepare_data_for_save(data)
+        params = self.extra_params.copy()
+        if not summarize_errors:
+            params["summarizeErrors"] = "false"
+        return uri, params, method, body, headers, False
 
-    def _put(self, data, summarize_errors=True):
+    def _save(self, data, summarize_errors=False):
+        return self.save_or_put(data, method="post", summarize_errors=summarize_errors)
+
+    def _put(self, data, summarize_errors=False):
         return self.save_or_put(data, method="put", summarize_errors=summarize_errors)
 
     def _delete(self, id):
@@ -380,6 +389,10 @@ class BaseManager(object):
             if "IDs" in kwargs:
                 params["IDs"] = kwargs["IDs"]
                 del kwargs["IDs"]
+
+            if "ContactIDs" in kwargs:
+                params["ContactIDs"] = kwargs["ContactIDs"]
+                del kwargs["ContactIDs"]
 
             def get_filter_params(key, value):
                 last_key = key.split("_")[-1]
