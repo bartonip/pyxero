@@ -343,8 +343,11 @@ class BaseManager(object):
     def _put(self, data, summarize_errors=False):
         return self.save_or_put(data, method="put", summarize_errors=summarize_errors)
 
-    def _delete(self, id):
-        uri = "/".join([self.base_url, self.name, id])
+    def _delete(self, id, url_suffix=None):
+        url_parts = [self.base_url, self.name, id]
+        if url_suffix:
+            url_parts.append(url_suffix)
+        uri = "/".join(url_parts)
         return uri, {}, "delete", None, None, False
 
     def _put_history_data(self, id, details):
