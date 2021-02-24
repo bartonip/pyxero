@@ -197,8 +197,8 @@ class BaseManager(object):
 
             if headers is None:
                 headers = {}
-
-            headers["Content-Type"] = "application/xml"
+            if "Content-Type" not in headers:
+                headers["Content-Type"] = "application/xml"
 
             if isinstance(self.credentials, OAuth2Credentials):
                 if self.credentials.tenant_id:
@@ -214,7 +214,6 @@ class BaseManager(object):
             # Set a user-agent so Xero knows the traffic is coming from pyxero
             # or individual user/partner
             headers["User-Agent"] = self.user_agent
-
             response = getattr(requests, method)(
                 uri,
                 data=body,
@@ -223,6 +222,8 @@ class BaseManager(object):
                 params=params,
                 timeout=timeout,
             )
+
+            print(response.request.__dict__)
 
             if response.status_code == 200:
                 # If we haven't got XML or JSON, assume we're being returned a
@@ -313,9 +314,16 @@ class BaseManager(object):
         uri = "/".join([self.base_url, self.name, id, "OnlineInvoice"])
         return uri, {}, "get", None, None, True
 
-    def save_or_put(self, data, method="post", headers=None, summarize_errors=False):
-        uri = "/".join([self.base_url, self.name])
-        body = self._prepare_data_for_save(data)
+    def save_or_put(self, data, method="post", headers=None, summarize_errors=False, url_suffix=None, as_json=False):
+        parts = [self.base_url, self.name]
+        if url_suffix:
+            parts.append(url_suffix)
+        uri = "/".join(parts)
+        if not as_json:
+            body = self._prepare_data_for_save(data)
+        else:
+            import json
+            body = json.dumps(data)
         params = self.extra_params.copy()
         if not summarize_errors:
             params["summarizeErrors"] = "false"
@@ -325,12 +333,12 @@ class BaseManager(object):
         uri = "/".join([self.base_url, self.name, id])
         body = self._prepare_data_for_save(data)
         params = self.extra_params.copy()
-        if not summarize_errors:
-            params["summarizeErrors"] = "false"
+        # if not summarize_errors:
+        #     params["summarizeErrors"] = "false"
         return uri, params, method, body, headers, False
 
     def _save(self, data, summarize_errors=False):
-        return self.save_or_put(data, method="post", summarize_errors=summarize_errors)
+        return self.save_or_put(data, method="post")
 
     def _put(self, data, summarize_errors=False):
         return self.save_or_put(data, method="put", summarize_errors=summarize_errors)

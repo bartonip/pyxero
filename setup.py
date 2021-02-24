@@ -22,9 +22,9 @@ setup(
     description='Python API for accessing the REST API of the Xero accounting tool.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='Russell Keith-Magee',
-    author_email='russell@keith-magee.com',
-    url='http://github.com/freakboy3742/pyxero',
+    author='Barton Ip',
+    author_email='bartoni@daughterlycare.com.au',
+    url='http://github.com/bartonip/pyxero',
     packages=['xero', ],
     install_requires=[
         'six>=1.8.0',

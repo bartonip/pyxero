@@ -21,6 +21,13 @@ class Manager(BaseManager):
         for method_name in self.DECORATED_METHODS:
             method = getattr(self, "_%s" % method_name)
             setattr(self, method_name, self._get_data(method))
+        
+        if self.name == "ContactGroups":
+            def add_contacts(self, id, contacts):
+                data = [{"ContactID": c} for c in contacts]
+                return self.save_or_put(data={"Contacts": data}, method="put", headers={"Content-Type": "application/json"}, url_suffix=f"{id}/Contacts", as_json=True)
+            
+            setattr(self, "add_contacts", self._get_data(add_contacts.__get__(self)))
 
         if self.name in self.OBJECT_DECORATED_METHODS.keys():
             object_decorated_methods = self.OBJECT_DECORATED_METHODS[self.name]
